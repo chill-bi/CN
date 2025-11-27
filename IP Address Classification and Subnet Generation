@@ -1,0 +1,116 @@
+import java.util.Scanner;
+ 
+public class IPSubnetCalculator {
+ 
+    // Determine the class of the IP address
+    private static String getIPAddressClass(String ip) {
+        int firstOctet = Integer.parseInt(ip.split("\\.")[0]);
+ 
+        if (firstOctet >= 1 && firstOctet <= 126) {
+            return "A";
+        } else if (firstOctet >= 128 && firstOctet <= 191) {
+            return "B";
+        } else if (firstOctet >= 192 && firstOctet <= 223) {
+            return "C";
+        } else if (firstOctet >= 224 && firstOctet <= 239) {
+            return "D (Multicast)";
+        } else if (firstOctet >= 240 && firstOctet <= 255) {
+            return "E (Experimental)";
+        } else {
+            return "Invalid";
+        }
+    }
+ 
+    // Get default subnet mask based on class
+    private static String getDefaultSubnetMask(String ipClass) {
+        switch (ipClass) {
+            case "A":
+                return "255.0.0.0";
+            case "B":
+                return "255.255.0.0";
+            case "C":
+                return "255.255.255.0";
+            default:
+                return "Not applicable";
+        }
+    }
+ 
+    // Convert decimal mask to binary string
+    private static String convertMaskToBinary(int maskBits) {
+        StringBuilder mask = new StringBuilder();
+        for (int i = 0; i < 32; i++) {
+            if (i < maskBits) {
+                mask.append("1");
+            } else {
+                mask.append("0");
+            }
+            if ((i + 1) % 8 == 0 && i != 31) {
+                mask.append(".");
+            }
+        }
+        return mask.toString();
+    }
+ 
+    // Generate subnet mask from subnet bits
+    private static String generateSubnetMask(int subnetBits) {
+        String binaryMask = convertMaskToBinary(subnetBits);
+        String[] octets = binaryMask.split("\\.");
+        StringBuilder mask = new StringBuilder();
+ 
+        for (int i = 0; i < 4; i++) {
+            int value = Integer.parseInt(octets[i], 2);
+            mask.append(value);
+            if (i < 3) {
+                mask.append(".");
+            }
+        }
+        return mask.toString();
+    }
+ 
+    // Calculate subnet address
+    private static String calculateSubnetAddress(String ip, String subnetMask) {
+        String[] ipOctets = ip.split("\\.");
+        String[] maskOctets = subnetMask.split("\\.");
+        StringBuilder subnetAddress = new StringBuilder();
+ 
+        for (int i = 0; i < 4; i++) {
+            int ipPart = Integer.parseInt(ipOctets[i]);
+            int maskPart = Integer.parseInt(maskOctets[i]);
+            int subnetPart = ipPart & maskPart;
+            subnetAddress.append(subnetPart);
+            if (i < 3) {
+                subnetAddress.append(".");
+            }
+        }
+        return subnetAddress.toString();
+    }
+ 
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+ 
+        System.out.print("Enter IP Address (e.g., 192.168.1.1): ");
+        String ip = scanner.nextLine();
+ 
+        String ipClass = getIPAddressClass(ip);
+        System.out.println("IP Address Class: " + ipClass);
+ 
+        String defaultMask = getDefaultSubnetMask(ipClass);
+        System.out.println("Default Network Mask: " + defaultMask);
+ 
+        System.out.print("Enter subnet bits (e.g., 24): ");
+        int subnetBits = scanner.nextInt();
+ 
+        if (subnetBits < 0 || subnetBits > 32) {
+            System.out.println("Invalid subnet bits.");
+            return;
+        }
+ 
+        String subnetMask = generateSubnetMask(subnetBits);
+        System.out.println("Subnet Mask: " + subnetMask);
+ 
+        String subnetAddress = calculateSubnetAddress(ip, subnetMask);
+        System.out.println("Subnet Address: " + subnetAddress);
+ 
+        scanner.close();
+    }
+}
