@@ -1,0 +1,45 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+ 
+public class TraceRoute {
+ 
+    public static void main(String[] args) {
+        if (args.length != 1) {
+            System.out.println("Usage: java TraceRoute <hostname>");
+            return;
+        }
+ 
+        String host = args[0];
+        String command;
+ 
+        // Detect OS
+        String os = System.getProperty("os.name").toLowerCase();
+ 
+        if (os.contains("win")) {
+            command = "tracert " + host;    // Windows command
+        } else {
+            command = "traceroute " + host; // Linux / Mac command
+        }
+ 
+        System.out.println("Running: " + command + "\n");
+ 
+        try {
+            Process process = Runtime.getRuntime().exec(command);
+ 
+            BufferedReader input = new BufferedReader(
+                    new InputStreamReader(process.getInputStream())
+            );
+ 
+            String line;
+            while ((line = input.readLine()) != null) {
+                System.out.println(line);
+            }
+ 
+            input.close();
+ 
+        } catch (IOException e) {
+            System.out.println("Error running traceroute: " + e.getMessage());
+        }
+    }
+}
