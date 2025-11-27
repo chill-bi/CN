@@ -1,0 +1,42 @@
+import java.io.IOException;
+import java.net.InetAddress;
+ 
+public class PingSimulator {
+    public static void main(String[] args) {
+        if (args.length != 1) {
+            System.out.println("Usage: java PingSimulator <hostname>");
+            return;
+        }
+ 
+        String host = args[0];
+        int pingCount = 4;
+        int timeout = 1000; // milliseconds
+ 
+        try {
+            InetAddress inet = InetAddress.getByName(host);
+            System.out.println("Pinging " + host + " with " + timeout + "ms timeout:");
+ 
+            for (int i = 1; i <= pingCount; i++) {
+                long startTime = System.currentTimeMillis();
+                boolean reachable = inet.isReachable(timeout);
+                long endTime = System.currentTimeMillis();
+                long rtt = endTime - startTime;
+ 
+                if (reachable) {
+                    System.out.println("Reply from " + inet.getHostAddress() + ": time=" + rtt + "ms");
+                } else {
+                    System.out.println("Request timed out.");
+                }
+ 
+                Thread.sleep(1000); // Wait 1 second between pings
+            }
+ 
+            System.out.println("Ping simulation complete.");
+ 
+        } catch (IOException e) {
+            System.out.println("I/O error: " + e.getMessage());
+        } catch (InterruptedException e) {
+            System.out.println("Ping interrupted.");
+        }
+    }
+}
