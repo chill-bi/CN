@@ -1,0 +1,81 @@
+Experiment 2: Error Detection using CRC Algorithm
+
+import java.util.*;
+ 
+public class CRC {
+ 
+    // XOR operation (ignoring first bit)
+    static String xor(String a, String b) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 1; i < b.length(); i++) {
+            result.append(a.charAt(i) == b.charAt(i) ? '0' : '1');
+        }
+        return result.toString();
+    }
+ 
+    // Perform Mod-2 division
+    static String mod2div(String dividend, String divisor) {
+ 
+        int pick = divisor.length();
+        String tmp = dividend.substring(0, pick);
+ 
+        while (pick < dividend.length()) {
+            if (tmp.charAt(0) == '1')
+                tmp = xor(divisor, tmp) + dividend.charAt(pick);
+            else
+                tmp = xor("0".repeat(pick), tmp) + dividend.charAt(pick);
+            pick++;
+        }
+ 
+        // Last division step
+        if (tmp.charAt(0) == '1')
+            tmp = xor(divisor, tmp);
+        else
+            tmp = xor("0".repeat(pick), tmp);
+ 
+        return tmp;   // This is the remainder (FCS)
+    }
+ 
+    // Sender side: create codeword by appending FCS
+    static String generateCodeword(String data, String generator) {
+        int n = generator.length() - 1;
+ 
+        String appendedData = data + "0".repeat(n); // step: append zeros
+        String fcs = mod2div(appendedData, generator); // compute remainder
+ 
+        return data + fcs;  // final transmitted frame (k + n bits)
+    }
+ 
+    // Receiver side: check remainder
+    static boolean checkReceived(String received, String generator) {
+        String remainder = mod2div(received, generator);
+        return remainder.equals("0".repeat(generator.length() - 1));
+    }
+ 
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+ 
+        // Example generator polynomial (you can change if needed)
+        String generator = "1101";  
+ 
+        System.out.print("Enter data bits (k-bit frame): ");
+        String data = sc.nextLine();
+ 
+        // Sender
+        String codeword = generateCodeword(data, generator);
+        System.out.println("Transmitted Frame (k+n bits): " + codeword);
+ 
+        // Receiver
+        System.out.print("Enter received frame: ");
+        String received = sc.nextLine();
+ 
+        if (checkReceived(received, generator))
+            System.out.println("No Error Detected.");
+        else
+            System.out.println("Error Detected.");
+    }
+ }
+
+
+
+
