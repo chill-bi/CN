@@ -1,0 +1,36 @@
+import heapq
+
+v = int(input("Vertices: "))
+g = [[] for _ in range(v)]
+
+e = int(input("Edges: "))
+for _ in range(e):
+    a = int(input()) - 1
+    b = int(input()) - 1
+    w = int(input())
+
+    # Undirected graph → add both directions
+    g[a].append((b, w))
+    g[b].append((a, w))
+
+start = int(input("Start: ")) - 1
+
+dist = [999] * v
+dist[start] = 0
+
+pq = [(0, start)]
+
+while pq:
+    d, u = heapq.heappop(pq)
+
+    # Skip outdated queue entries
+    if d > dist[u]:
+        continue
+
+    for v2, w in g[u]:
+        if dist[v2] > d + w:
+            dist[v2] = d + w
+            heapq.heappush(pq, (dist[v2], v2))
+
+print("Shortest distances from start:")
+print(dist)
