@@ -1,0 +1,101 @@
+#include <stdio.h>
+#include <math.h>
+/*Function to calculate parity bits*/
+void generateHammingCode(int dataBits[], int m, int hammingCode[]) {
+int r = 0, i, j, k;
+/*Find number of redundant bits*/
+while ((1 << r) < (m + r + 1)) {
+r++;
+}
+int n = m + r; // total length
+/* Initialize hamming code with -1 (to mark parity positions)*/
+k = 0;
+for (i = 1; i <= n; i++) {
+if ((i & (i - 1)) == 0) { // parity positions: powers of 2
+hammingCode[i] = -1;
+} else {
+hammingCode[i] = dataBits[k++];
+}
+}
+/* Calculate parity bits*/
+for (i = 0; i < r; i++) {
+int pos = 1 << i;
+int parity = 0;
+for (j = pos; j <= n; j++) {
+if (j & pos) {
+if (hammingCode[j] != -1) {
+parity ^= hammingCode[j];
+}
+}
+}
+hammingCode[pos] = parity;
+}
+printf("\nGenerated Hamming Codeword: ");
+for (i = n; i >= 1; i--) {
+printf("%d", hammingCode[i]);
+}
+printf("\n");
+}
+/* Function to detect and correct error*/
+void detectAndCorrect(int hammingCode[], int n) {
+int r = log2(n) + 1, i, j;
+ 
+int errorPos = 0;
+/* Check parity bits*/
+for (i = 0; i < r; i++) {
+int pos = 1 << i;
+int parity = 0;
+for (j = pos; j <= n; j++) {
+if (j & pos) {
+parity ^= hammingCode[j];
+}
+}
+if (parity != 0) {
+errorPos += pos;
+}
+}
+if (errorPos == 0) {
+printf("\nNo error detected.\n");
+} else {
+printf("\nError detected at position: %d\n", errorPos);
+/* Correct the error*/
+hammingCode[errorPos] ^= 1;
+printf("Corrected Hamming Codeword: ");
+for (i = n; i >= 1; i--) {
+printf("%d", hammingCode[i]);
+}
+printf("\n");
+}
+}
+int main() {
+int m, i, n;
+int dataBits[20], hammingCode[50];
+printf("Enter number of data bits: ");
+scanf("%d", &m);
+printf("Enter data bits (LSB first): ");
+for (i = 0; i < m; i++) {
+scanf("%d", &dataBits[i]);
+}
+/* Generate Hamming Code*/
+generateHammingCode(dataBits, m, hammingCode);
+/* Calculate total length (data + parity bits)*/
+int r = 0;
+ 
+while ((1 << r) < (m + r + 1)) r++;
+n = m + r;
+/* Introduce error manually*/
+int pos;
+printf("\nEnter error position (0 for no error): ");
+scanf("%d", &pos);
+if (pos != 0 && pos <= n) {
+hammingCode[pos] ^= 1; // flip bit at error position
+printf("Erroneous Hamming Codeword: ");
+for (i = n; i >= 1; i--) {
+printf("%d", hammingCode[i]);
+}
+printf("\n");
+}
+/* Detect and correct*/
+detectAndCorrect(hammingCode, n);
+return 0;
+}
