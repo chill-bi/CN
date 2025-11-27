@@ -1,0 +1,81 @@
+Echo Server
+
+
+import java.io.*;
+import java.net.*;
+ 
+public class EchoServer {
+    public static void main(String[] args) {
+        int port = 12345; // You can choose any available port number
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+            System.out.println("Echo Server is running on port " + port);
+ 
+            while (true) {
+                Socket clientSocket = serverSocket.accept(); // Accept a connection
+                System.out.println("Client connected: " + clientSocket.getInetAddress());
+ 
+                // Create input and output streams for communication
+                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+ 
+                String line;
+                while ((line = in.readLine()) != null) {
+                    System.out.println("Received from client: " + line);
+                    out.println(line); // Echo the message back to the client
+                }
+ 
+                System.out.println("Client disconnected.");
+                clientSocket.close();
+            }
+        } catch (IOException e) {
+            System.err.println("Server exception: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+
+
+Echo Client
+
+
+import java.io.*;
+import java.net.*;
+ 
+public class EchoClient {
+    public static void main(String[] args) {
+        String hostname = "localhost"; // or the server's IP address
+        int port = 12345;
+ 
+        try (Socket socket = new Socket(hostname, port)) {
+            System.out.println("Connected to server");
+ 
+            // Input from user
+            BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in));
+ 
+            // Streams for communication with server
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+ 
+            String message;
+            System.out.println("Type a message (type 'exit' to quit):");
+ 
+            while (true) {
+                System.out.print("> ");
+                message = userInput.readLine();
+ 
+                if (message.equalsIgnoreCase("exit")) {
+                    break;
+                }
+ 
+                out.println(message); // Send message to server
+                String response = in.readLine(); // Read echoed message
+                System.out.println("Echo from server: " + response);
+            }
+ 
+            System.out.println("Disconnected from server.");
+        } catch (IOException e) {
+            System.err.println("Client exception: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}
